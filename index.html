@@ -69,8 +69,8 @@
                         </div>
 
                         <div class="space-y-1 mb-3">
-                            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
-                                Rate: ₱<span x-text="(product.isCase ? product.price * product.unitsPerCase : product.price).toLocaleString()"></span>
+                            <p class="text-[11px] md:text-xs font-bold text-slate-700 uppercase tracking-tight">
+                                Pre-order Price: ₱<span x-text="(product.isCase ? product.price * product.unitsPerCase : product.price).toLocaleString()"></span>
                             </p>
                             
                             <p class="text-sm md:text-xl font-black text-slate-900">
@@ -161,7 +161,7 @@
                         type: "Booster Box", 
                         set: "ME05", 
                         price: 8500, 
-                        unitsPerCase: 6, // Edit units per case here
+                        unitsPerCase: 6,
                         image: "https://tcgplayer-cdn.tcgplayer.com/product/654137_in_1000x1000.jpg", 
                         selectedQty: 1, 
                         isCase: false, 
@@ -174,7 +174,7 @@
                         type: "ETB", 
                         set: "ME05", 
                         price: 3600, 
-                        unitsPerCase: 10, // Edit units per case here
+                        unitsPerCase: 10,
                         image: "https://www.gundam-gcg.com/gcg/bccard/asia-en/news/2025/05/02/8255768kkzrLLWCW/thumbnail_box_jp.webp", 
                         selectedQty: 1, 
                         isCase: false, 
@@ -187,7 +187,6 @@
                     return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
                 },
 
-                // NEW: Dynamic Calculation Function
                 calculateLiveDeposit(product) {
                     const basePrice = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     return basePrice * 0.3 * (product.selectedQty || 1);
@@ -199,7 +198,6 @@
                     const unitPrice = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     const depositPerItem = unitPrice * 0.3;
 
-                    // Add as a unique line item based on quantity selected
                     this.cart.push({
                         id: product.id + (product.isCase ? '_case' : '_unit'),
                         name: product.name,
@@ -217,7 +215,7 @@
 
                 updateQty(index, change) {
                     if (change === -1) {
-                        this.cart.splice(index, 1); // For your business model, remove the line item if they click remove
+                        this.cart.splice(index, 1);
                     }
                 },
 

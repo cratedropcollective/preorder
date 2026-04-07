@@ -31,7 +31,7 @@
 
     <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
         <div class="py-4 px-4">
-            <div class="container mx-auto flex flex-col md:flex-row gap-3">
+            <div class="container mx-auto">
                 <div class="relative flex-1">
                     <input type="text" x-model="searchQuery" placeholder="Search sealed products..." 
                            class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-xl text-base md:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
@@ -47,10 +47,8 @@
                 <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col"
                      :class="product.soldOut ? 'opacity-70' : ''">
                     
-                    <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4 overflow-hidden"
-                         :class="product.soldOut ? 'grayscale' : ''">
-                        <img :src="product.image" :alt="product.name" 
-                             class="max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-500 hover:scale-105">
+                    <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4 overflow-hidden">
+                        <img :src="product.image" :alt="product.name" class="max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-500 hover:scale-105">
                         <span x-show="!product.soldOut" class="absolute top-2 left-2 text-[8px] font-black bg-black/80 text-white px-1.5 py-0.5 rounded uppercase" x-text="product.type"></span>
                         <span x-show="product.soldOut" class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-black text-xs uppercase">Sold Out</span>
                     </div>
@@ -60,23 +58,24 @@
                         <h2 class="text-xs md:text-base font-bold leading-tight mb-2 h-8 md:h-12 overflow-hidden" x-text="product.name"></h2>
                         
                         <div x-show="!product.soldOut" class="flex bg-gray-100 p-1 rounded-lg mb-3">
-                            <button @click="product.isCase = false" 
-                                    :class="!product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'"
-                                    class="flex-1 text-[9px] font-black py-1 rounded-md transition-all uppercase">Unit</button>
-                            <button @click="product.isCase = true" 
-                                    :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'"
-                                    class="flex-1 text-[9px] font-black py-1 rounded-md transition-all uppercase">Case (<span x-text="product.unitsPerCase"></span>)</button>
+                            <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md uppercase">Unit</button>
+                            <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md uppercase">Case (<span x-text="product.unitsPerCase"></span>)</button>
                         </div>
 
-                        <div class="space-y-1 mb-3">
-                            <p class="text-[11px] md:text-xs font-bold text-slate-700 uppercase tracking-tight">
-                                Pre-order Price: ₱<span x-text="(product.isCase ? product.price * product.unitsPerCase : product.price).toLocaleString()"></span>
-                            </p>
+                        <div class="space-y-3 mb-4">
+                            <div>
+                                <span class="text-[10px] text-slate-500 block uppercase font-bold">Total Pre-order Price:</span>
+                                <p class="text-sm md:text-xl font-black text-slate-700">
+                                    ₱<span x-text="( (product.isCase ? product.price * product.unitsPerCase : product.price) * product.selectedQty ).toLocaleString()"></span>
+                                </p>
+                            </div>
                             
-                            <p class="text-sm md:text-xl font-black text-slate-900">
-                                <span class="text-[10px] text-blue-600 block uppercase">30% Total Downpayment:</span>
-                                ₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span>
-                            </p>
+                            <div>
+                                <span class="text-[10px] text-blue-600 block uppercase font-bold">30% Total Downpayment:</span>
+                                <p class="text-sm md:text-xl font-black text-slate-900">
+                                    ₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span>
+                                </p>
+                            </div>
                         </div>
 
                         <div x-show="!product.soldOut" class="flex items-center space-x-1 mb-2">
@@ -87,13 +86,11 @@
                             </div>
                         </div>
 
-                        <button @click="addToCart(product)" 
-                                :disabled="product.soldOut"
+                        <button @click="addToCart(product)" :disabled="product.soldOut"
                                 :class="product.soldOut ? 'bg-gray-300' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900')"
-                                class="w-full h-9 rounded-lg text-white transition-colors text-[10px] md:text-xs font-bold flex items-center justify-center uppercase shadow-sm">
-                            <span x-show="product.soldOut">Out of Stock</span>
-                            <span x-show="!product.soldOut && !product.justAdded">Add to Crate</span>
-                            <span x-show="!product.soldOut && product.justAdded"><i class="fas fa-check mr-1"></i> Added</span>
+                                class="w-full h-9 rounded-lg text-white text-[10px] md:text-xs font-bold uppercase shadow-sm transition-all">
+                            <span x-show="!product.justAdded">Add to Crate</span>
+                            <span x-show="product.justAdded"><i class="fas fa-check mr-1"></i> Added</span>
                         </button>
                     </div>
                 </div>
@@ -103,10 +100,7 @@
 
     <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cartOpen = false" x-transition.opacity></div>
-        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" 
-             x-transition:enter="transition ease-out duration-300 transform" 
-             x-transition:enter-start="translate-x-full" 
-             x-transition:enter-end="translate-x-0">
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0">
             
             <div class="flex justify-between items-center mb-6 border-b pb-4">
                 <h2 class="text-xl font-black text-slate-900 uppercase tracking-tighter">Your Crate</h2>
@@ -122,25 +116,29 @@
                                 <span x-text="item.name"></span> 
                                 <span class="text-blue-600 text-[9px]" x-text="item.isCase ? `(CASE OF ${item.unitsPerCase})` : '(UNIT)'"></span>
                             </p>
-                            <p class="text-[10px] text-gray-500">Qty: <span x-text="item.quantity"></span></p>
+                            <p class="text-[10px] text-gray-400 uppercase font-bold">Total Value: ₱<span x-text="(item.fullPrice * item.quantity).toLocaleString()"></span></p>
                             <div class="flex justify-between items-end mt-2">
-                                <button @click="updateQty(index, -1)" class="text-red-500 text-[10px] font-bold uppercase tracking-widest hover:underline">Remove Item</button>
-                                <span class="font-bold text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
+                                <button @click="updateQty(index, -1)" class="text-red-500 text-[10px] font-bold uppercase hover:underline">Remove</button>
+                                <div class="text-right">
+                                    <span class="text-[10px] text-blue-600 font-bold block uppercase leading-none">30% DP:</span>
+                                    <span class="font-black text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </template>
-                <div x-show="cart.length === 0" class="text-center py-20 text-gray-400">
-                    <p class="text-xs font-black uppercase">Your crate is empty</p>
-                </div>
             </div>
 
-            <div class="mt-6 pt-6 border-t" x-show="cart.length > 0">
-                <div class="flex justify-between text-lg font-black mb-4 text-blue-600">
+            <div class="mt-6 pt-6 border-t space-y-2" x-show="cart.length > 0">
+                <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                    <span>Full Order Value:</span>
+                    <span>₱<span x-text="cartFullTotal"></span></span>
+                </div>
+                <div class="flex justify-between text-lg font-black text-blue-600 border-t pt-2 uppercase">
                     <span>Initial Pay (30%):</span>
                     <span>₱<span x-text="cartDepositTotal"></span></span>
                 </div>
-                <button @click="checkout()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm shadow-lg hover:bg-blue-700 active:scale-95 transition-all uppercase">
+                <button @click="checkout()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-xl font-black text-sm shadow-lg hover:bg-blue-700 active:scale-95 transition-all uppercase">
                     Checkout via Messenger
                 </button>
             </div>
@@ -153,92 +151,58 @@
                 cartOpen: false,
                 searchQuery: '',
                 cart: [],
-                
                 products: [
-                    { 
-                        id: 1, 
-                        name: "Booster Box [36 packs]", 
-                        type: "Booster Box", 
-                        set: "ME05", 
-                        price: 8500, 
-                        unitsPerCase: 6,
-                        image: "https://tcgplayer-cdn.tcgplayer.com/product/654137_in_1000x1000.jpg", 
-                        selectedQty: 1, 
-                        isCase: false, 
-                        justAdded: false, 
-                        soldOut: false 
-                    },
-                    { 
-                        id: 5, 
-                        name: "Elite Trainer Box", 
-                        type: "ETB", 
-                        set: "ME05", 
-                        price: 3600, 
-                        unitsPerCase: 10,
-                        image: "https://www.gundam-gcg.com/gcg/bccard/asia-en/news/2025/05/02/8255768kkzrLLWCW/thumbnail_box_jp.webp", 
-                        selectedQty: 1, 
-                        isCase: false, 
-                        justAdded: false, 
-                        soldOut: false 
-                    }
+                    { id: 1, name: "Booster Box [36 packs]", type: "Booster Box", set: "ME05", price: 8500, unitsPerCase: 6, image: "https://tcgplayer-cdn.tcgplayer.com/product/654137_in_1000x1000.jpg", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
+                    { id: 5, name: "Elite Trainer Box", type: "ETB", set: "ME05", price: 3600, unitsPerCase: 10, image: "https://www.gundam-gcg.com/gcg/bccard/asia-en/news/2025/05/02/8255768kkzrLLWCW/thumbnail_box_jp.webp", selectedQty: 1, isCase: false, justAdded: false, soldOut: false }
                 ],
-
                 get filteredProducts() {
                     return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
                 },
-
                 calculateLiveDeposit(product) {
                     const basePrice = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     return basePrice * 0.3 * (product.selectedQty || 1);
                 },
-
                 addToCart(product) {
                     if(product.soldOut) return;
-                    
-                    const unitPrice = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    const depositPerItem = unitPrice * 0.3;
-
+                    const fullPricePerItem = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     this.cart.push({
-                        id: product.id + (product.isCase ? '_case' : '_unit'),
+                        id: Date.now(),
                         name: product.name,
                         isCase: product.isCase,
                         unitsPerCase: product.unitsPerCase,
-                        depositPrice: depositPerItem,
+                        depositPrice: fullPricePerItem * 0.3,
+                        fullPrice: fullPricePerItem,
                         quantity: product.selectedQty,
                         image: product.image
                     });
-
                     product.justAdded = true;
                     setTimeout(() => { product.justAdded = false; }, 1000);
                     product.selectedQty = 1;
                 },
-
                 updateQty(index, change) {
-                    if (change === -1) {
-                        this.cart.splice(index, 1);
-                    }
+                    if (change === -1) this.cart.splice(index, 1);
                 },
-
                 get cartDepositTotal() {
                     return this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0).toLocaleString();
                 },
-
+                get cartFullTotal() {
+                    return this.cart.reduce((sum, item) => sum + (item.fullPrice * item.quantity), 0).toLocaleString();
+                },
                 async checkout() {
                     let orderSummary = "🛒 ORDER FROM CRATE DROP COLLECTIVE\n";
                     orderSummary += "---------------------------------\n";
-                    orderSummary += "PAYMENT TYPE: 30% Downpayment\n\n";
-                    
                     this.cart.forEach(item => {
                         const type = item.isCase ? `CASE OF ${item.unitsPerCase}` : "UNIT";
                         orderSummary += `• ${item.quantity}x ${item.name} (${type})\n`;
+                        orderSummary += `  Value: ₱${(item.fullPrice * item.quantity).toLocaleString()}\n`;
                         orderSummary += `  Downpayment: ₱${(item.depositPrice * item.quantity).toLocaleString()}\n\n`;
                     });
-                    
-                    orderSummary += `TOTAL TO PAY NOW: ₱${this.cartDepositTotal}`;
+                    orderSummary += `FULL ORDER VALUE: ₱${this.cartFullTotal}\n`;
+                    orderSummary += `TOTAL DOWNPAYMENT (30%): ₱${this.cartDepositTotal}`;
 
                     try {
                         await navigator.clipboard.writeText(orderSummary);
-                        alert("Downpayment details copied! Opening Messenger...");
+                        alert("Details copied! Opening Messenger...");
                         window.open("https://m.me/cratedropcollective", "_blank");
                     } catch (err) {
                         window.open("https://m.me/cratedropcollective", "_blank");

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop Collective | Pre Order</title>
+    <title>Crate Drop Collective | Sealed Products</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -37,11 +37,6 @@
                            class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-xl text-base md:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                     <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
                 </div>
-                <div class="flex items-center px-2">
-                    <span class="bg-blue-600 text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase shadow-md">
-                        Sealed Products <span class="ml-2 opacity-70" x-text="`(${products.length})`"></span>
-                    </span>
-                </div>
             </div>
         </div>
     </div>
@@ -70,29 +65,24 @@
                                     class="flex-1 text-[9px] font-black py-1 rounded-md transition-all uppercase">Unit</button>
                             <button @click="product.isCase = true" 
                                     :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'"
-                                    class="flex-1 text-[9px] font-black py-1 rounded-md transition-all uppercase">Case</button>
+                                    class="flex-1 text-[9px] font-black py-1 rounded-md transition-all uppercase">Case (<span x-text="product.unitsPerCase"></span>)</button>
                         </div>
 
                         <div class="space-y-1 mb-3">
-                            <template x-if="product.isCase">
-                                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
-                                    Full Case (<span x-text="product.unitsPerCase"></span> units): ₱<span x-text="(product.price * product.unitsPerCase).toLocaleString()"></span>
-                                </p>
-                            </template>
-                            <template x-if="!product.isCase">
-                                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Full Price: ₱<span x-text="product.price.toLocaleString()"></span></p>
-                            </template>
+                            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
+                                Rate: ₱<span x-text="(product.isCase ? product.price * product.unitsPerCase : product.price).toLocaleString()"></span>
+                            </p>
                             
                             <p class="text-sm md:text-xl font-black text-slate-900">
-                                <span class="text-[10px] text-blue-600 block uppercase">30% Deposit Due:</span>
-                                ₱<span x-text="getCurrentDeposit(product).toLocaleString()"></span>
+                                <span class="text-[10px] text-blue-600 block uppercase">30% Total Downpayment:</span>
+                                ₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span>
                             </p>
                         </div>
 
                         <div x-show="!product.soldOut" class="flex items-center space-x-1 mb-2">
                             <div class="flex items-center border border-gray-300 rounded-lg px-1 h-7 bg-gray-50 scale-90 md:scale-100 origin-left">
                                 <button @click="if(product.selectedQty > 1) product.selectedQty--" class="text-gray-500 px-2 font-bold">-</button>
-                                <span class="text-[10px] md:text-xs font-bold w-4 text-center" x-text="product.selectedQty"></span>
+                                <input type="number" x-model.number="product.selectedQty" class="text-[10px] md:text-xs font-bold w-8 text-center bg-transparent border-none focus:ring-0">
                                 <button @click="product.selectedQty++" class="text-gray-500 px-2 font-bold">+</button>
                             </div>
                         </div>
@@ -100,9 +90,9 @@
                         <button @click="addToCart(product)" 
                                 :disabled="product.soldOut"
                                 :class="product.soldOut ? 'bg-gray-300' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900')"
-                                class="w-full h-9 rounded-lg text-white transition-colors text-[10px] md:text-xs font-bold flex items-center justify-center uppercase">
+                                class="w-full h-9 rounded-lg text-white transition-colors text-[10px] md:text-xs font-bold flex items-center justify-center uppercase shadow-sm">
                             <span x-show="product.soldOut">Out of Stock</span>
-                            <span x-show="!product.soldOut && !product.justAdded">Add to Cart</span>
+                            <span x-show="!product.soldOut && !product.justAdded">Add to Crate</span>
                             <span x-show="!product.soldOut && product.justAdded"><i class="fas fa-check mr-1"></i> Added</span>
                         </button>
                     </div>
@@ -119,7 +109,7 @@
              x-transition:enter-end="translate-x-0">
             
             <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 class="text-xl font-black text-slate-900 uppercase">Your Crate</h2>
+                <h2 class="text-xl font-black text-slate-900 uppercase tracking-tighter">Your Crate</h2>
                 <button @click="cartOpen = false" class="text-3xl">&times;</button>
             </div>
 
@@ -130,20 +120,19 @@
                         <div class="flex-1">
                             <p class="font-bold text-xs leading-tight mb-1">
                                 <span x-text="item.name"></span> 
-                                <span class="text-blue-600" x-text="item.isCase ? `(CASE OF ${item.unitsPerCase})` : '(UNIT)'"></span>
+                                <span class="text-blue-600 text-[9px]" x-text="item.isCase ? `(CASE OF ${item.unitsPerCase})` : '(UNIT)'"></span>
                             </p>
-                            <p class="text-[10px] text-blue-600 font-bold mb-2">30% Deposit: ₱<span x-text="item.depositPrice.toLocaleString()"></span></p>
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center bg-gray-100 rounded-lg h-7">
-                                    <button @click="updateQty(index, -1)" class="px-3 text-gray-600 text-xs font-bold">-</button>
-                                    <span class="text-[10px] font-bold w-4 text-center" x-text="item.quantity"></span>
-                                    <button @click="updateQty(index, 1)" class="px-3 text-gray-600 text-xs font-bold">+</button>
-                                </div>
+                            <p class="text-[10px] text-gray-500">Qty: <span x-text="item.quantity"></span></p>
+                            <div class="flex justify-between items-end mt-2">
+                                <button @click="updateQty(index, -1)" class="text-red-500 text-[10px] font-bold uppercase tracking-widest hover:underline">Remove Item</button>
                                 <span class="font-bold text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
                             </div>
                         </div>
                     </div>
                 </template>
+                <div x-show="cart.length === 0" class="text-center py-20 text-gray-400">
+                    <p class="text-xs font-black uppercase">Your crate is empty</p>
+                </div>
             </div>
 
             <div class="mt-6 pt-6 border-t" x-show="cart.length > 0">
@@ -151,8 +140,8 @@
                     <span>Initial Pay (30%):</span>
                     <span>₱<span x-text="cartDepositTotal"></span></span>
                 </div>
-                <button @click="checkout()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm shadow-lg hover:bg-blue-700 uppercase transition-all">
-                    Order 30% Deposit
+                <button @click="checkout()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm shadow-lg hover:bg-blue-700 active:scale-95 transition-all uppercase">
+                    Checkout via Messenger
                 </button>
             </div>
         </div>
@@ -163,18 +152,16 @@
             return {
                 cartOpen: false,
                 searchQuery: '',
-                showCopiedToast: false,
                 cart: [],
                 
-                // EDITABLE PRODUCT LIST
                 products: [
                     { 
                         id: 1, 
-                        name: "Booster Box", 
+                        name: "Booster Box [36 packs]", 
                         type: "Booster Box", 
                         set: "ME05", 
                         price: 8500, 
-                        unitsPerCase: 6, // EDIT THIS NUMBER
+                        unitsPerCase: 6, // Edit units per case here
                         image: "https://tcgplayer-cdn.tcgplayer.com/product/654137_in_1000x1000.jpg", 
                         selectedQty: 1, 
                         isCase: false, 
@@ -182,12 +169,12 @@
                         soldOut: false 
                     },
                     { 
-                        id: 2, 
+                        id: 5, 
                         name: "Elite Trainer Box", 
                         type: "ETB", 
                         set: "ME05", 
                         price: 3600, 
-                        unitsPerCase: 10, // EDIT THIS NUMBER
+                        unitsPerCase: 10, // Edit units per case here
                         image: "https://www.gundam-gcg.com/gcg/bccard/asia-en/news/2025/05/02/8255768kkzrLLWCW/thumbnail_box_jp.webp", 
                         selectedQty: 1, 
                         isCase: false, 
@@ -197,29 +184,28 @@
                 ],
 
                 get filteredProducts() {
-                    return this.products
-                        .filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
-                        .sort((a, b) => a.soldOut - b.soldOut);
+                    return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
                 },
 
-                getCurrentDeposit(product) {
-                    const price = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    return price * 0.3;
+                // NEW: Dynamic Calculation Function
+                calculateLiveDeposit(product) {
+                    const basePrice = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    return basePrice * 0.3 * (product.selectedQty || 1);
                 },
 
                 addToCart(product) {
                     if(product.soldOut) return;
                     
-                    const deposit = this.getCurrentDeposit(product);
-                    const fullPrice = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    const unitPrice = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    const depositPerItem = unitPrice * 0.3;
 
+                    // Add as a unique line item based on quantity selected
                     this.cart.push({
-                        id: product.id,
+                        id: product.id + (product.isCase ? '_case' : '_unit'),
                         name: product.name,
                         isCase: product.isCase,
                         unitsPerCase: product.unitsPerCase,
-                        depositPrice: deposit,
-                        fullPrice: fullPrice,
+                        depositPrice: depositPerItem,
                         quantity: product.selectedQty,
                         image: product.image
                     });
@@ -230,10 +216,8 @@
                 },
 
                 updateQty(index, change) {
-                    if (this.cart[index].quantity + change <= 0) {
-                        this.cart.splice(index, 1);
-                    } else {
-                        this.cart[index].quantity += change;
+                    if (change === -1) {
+                        this.cart.splice(index, 1); // For your business model, remove the line item if they click remove
                     }
                 },
 
@@ -243,19 +227,20 @@
 
                 async checkout() {
                     let orderSummary = "🛒 ORDER FROM CRATE DROP COLLECTIVE\n";
-                    orderSummary += "⚠️ DEPOSIT-ONLY (30%)\n\n";
+                    orderSummary += "---------------------------------\n";
+                    orderSummary += "PAYMENT TYPE: 30% Downpayment\n\n";
                     
                     this.cart.forEach(item => {
                         const type = item.isCase ? `CASE OF ${item.unitsPerCase}` : "UNIT";
                         orderSummary += `• ${item.quantity}x ${item.name} (${type})\n`;
-                        orderSummary += `  30% Deposit: ₱${(item.depositPrice * item.quantity).toLocaleString()}\n\n`;
+                        orderSummary += `  Downpayment: ₱${(item.depositPrice * item.quantity).toLocaleString()}\n\n`;
                     });
                     
-                    orderSummary += `TOTAL INITIAL PAYMENT: ₱${this.cartDepositTotal}`;
+                    orderSummary += `TOTAL TO PAY NOW: ₱${this.cartDepositTotal}`;
 
                     try {
                         await navigator.clipboard.writeText(orderSummary);
-                        alert("Order details copied! Opening Messenger...");
+                        alert("Downpayment details copied! Opening Messenger...");
                         window.open("https://m.me/cratedropcollective", "_blank");
                     } catch (err) {
                         window.open("https://m.me/cratedropcollective", "_blank");

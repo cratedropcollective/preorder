@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop Collective | Sealed Products</title>
+    <title>Crate Drop Collective | Pre-orders</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -117,13 +117,20 @@
                                 <span class="text-blue-600 text-[9px]" x-text="item.isCase ? `(CASE OF ${item.unitsPerCase})` : '(UNIT)'"></span>
                             </p>
                             
-                            <div class="space-y-0.5">
-                                <p class="text-[10px] text-slate-600 font-bold uppercase">Quantity: <span class="text-slate-900" x-text="item.quantity"></span></p>
+                            <div class="space-y-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-[10px] text-slate-600 font-bold uppercase">Qty:</span>
+                                    <div class="flex items-center border border-gray-200 rounded-md bg-gray-50 h-6">
+                                        <button @click="updateCartQty(index, -1)" class="px-2 text-xs font-bold text-slate-500 hover:text-red-500">-</button>
+                                        <span class="text-[10px] font-black w-6 text-center" x-text="item.quantity"></span>
+                                        <button @click="updateCartQty(index, 1)" class="px-2 text-xs font-bold text-slate-500 hover:text-blue-600">+</button>
+                                    </div>
+                                </div>
                                 <p class="text-[10px] text-gray-400 uppercase font-bold">Total Value: ₱<span x-text="(item.fullPrice * item.quantity).toLocaleString()"></span></p>
                             </div>
 
                             <div class="flex justify-between items-end mt-2">
-                                <button @click="removeItem(index)" class="text-red-500 text-[10px] font-bold uppercase hover:underline">Remove</button>
+                                <button @click="removeItem(index)" class="text-red-500 text-[10px] font-bold uppercase hover:underline">Remove All</button>
                                 <div class="text-right">
                                     <span class="text-[10px] text-blue-600 font-bold block uppercase leading-none">30% DP:</span>
                                     <span class="font-black text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
@@ -175,17 +182,14 @@
                 },
                 addToCart(product) {
                     if(product.soldOut) return;
-                    
                     const fullPricePerItem = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    
-                    // CHECK IF ITEM ALREADY EXISTS IN CART (matching both ID and Unit/Case type)
                     const existingItem = this.cart.find(item => item.productId === product.id && item.isCase === product.isCase);
 
                     if (existingItem) {
                         existingItem.quantity += product.selectedQty;
                     } else {
                         this.cart.push({
-                            productId: product.id, // Store original product ID for tracking
+                            productId: product.id,
                             name: product.name,
                             isCase: product.isCase,
                             unitsPerCase: product.unitsPerCase,
@@ -199,6 +203,12 @@
                     product.justAdded = true;
                     setTimeout(() => { product.justAdded = false; }, 1000);
                     product.selectedQty = 1;
+                },
+                updateCartQty(index, change) {
+                    this.cart[index].quantity += change;
+                    if (this.cart[index].quantity <= 0) {
+                        this.removeItem(index);
+                    }
                 },
                 removeItem(index) {
                     this.cart.splice(index, 1);

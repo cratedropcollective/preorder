@@ -123,7 +123,7 @@
                             </div>
 
                             <div class="flex justify-between items-end mt-2">
-                                <button @click="updateQty(index, -1)" class="text-red-500 text-[10px] font-bold uppercase hover:underline">Remove</button>
+                                <button @click="removeItem(index)" class="text-red-500 text-[10px] font-bold uppercase hover:underline">Remove</button>
                                 <div class="text-right">
                                     <span class="text-[10px] text-blue-600 font-bold block uppercase leading-none">30% DP:</span>
                                     <span class="font-black text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
@@ -175,23 +175,33 @@
                 },
                 addToCart(product) {
                     if(product.soldOut) return;
+                    
                     const fullPricePerItem = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    this.cart.push({
-                        id: Date.now(),
-                        name: product.name,
-                        isCase: product.isCase,
-                        unitsPerCase: product.unitsPerCase,
-                        depositPrice: fullPricePerItem * 0.3,
-                        fullPrice: fullPricePerItem,
-                        quantity: product.selectedQty,
-                        image: product.image
-                    });
+                    
+                    // CHECK IF ITEM ALREADY EXISTS IN CART (matching both ID and Unit/Case type)
+                    const existingItem = this.cart.find(item => item.productId === product.id && item.isCase === product.isCase);
+
+                    if (existingItem) {
+                        existingItem.quantity += product.selectedQty;
+                    } else {
+                        this.cart.push({
+                            productId: product.id, // Store original product ID for tracking
+                            name: product.name,
+                            isCase: product.isCase,
+                            unitsPerCase: product.unitsPerCase,
+                            depositPrice: fullPricePerItem * 0.3,
+                            fullPrice: fullPricePerItem,
+                            quantity: product.selectedQty,
+                            image: product.image
+                        });
+                    }
+
                     product.justAdded = true;
                     setTimeout(() => { product.justAdded = false; }, 1000);
                     product.selectedQty = 1;
                 },
-                updateQty(index, change) {
-                    if (change === -1) this.cart.splice(index, 1);
+                removeItem(index) {
+                    this.cart.splice(index, 1);
                 },
                 get cartDepositTotal() {
                     return this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0).toLocaleString();

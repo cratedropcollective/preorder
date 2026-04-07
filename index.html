@@ -116,7 +116,12 @@
                                 <span x-text="item.name"></span> 
                                 <span class="text-blue-600 text-[9px]" x-text="item.isCase ? `(CASE OF ${item.unitsPerCase})` : '(UNIT)'"></span>
                             </p>
-                            <p class="text-[10px] text-gray-400 uppercase font-bold">Total Value: ₱<span x-text="(item.fullPrice * item.quantity).toLocaleString()"></span></p>
+                            
+                            <div class="space-y-0.5">
+                                <p class="text-[10px] text-slate-600 font-bold uppercase">Quantity: <span class="text-slate-900" x-text="item.quantity"></span></p>
+                                <p class="text-[10px] text-gray-400 uppercase font-bold">Total Value: ₱<span x-text="(item.fullPrice * item.quantity).toLocaleString()"></span></p>
+                            </div>
+
                             <div class="flex justify-between items-end mt-2">
                                 <button @click="updateQty(index, -1)" class="text-red-500 text-[10px] font-bold uppercase hover:underline">Remove</button>
                                 <div class="text-right">

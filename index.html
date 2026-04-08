@@ -44,20 +44,18 @@
     <main class="container mx-auto py-6 px-2 md:px-4">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
             <template x-for="product in filteredProducts" :key="product.id">
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col"
-                     :class="product.soldOut ? 'opacity-70' : ''">
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col">
                     
                     <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4 overflow-hidden">
                         <img :src="product.image" :alt="product.name" class="max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-500 hover:scale-105">
-                        <span x-show="!product.soldOut" class="absolute top-2 left-2 text-[8px] font-black bg-black/80 text-white px-1.5 py-0.5 rounded uppercase" x-text="product.type"></span>
-                        <span x-show="product.soldOut" class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-black text-xs uppercase">Sold Out</span>
+                        <span class="absolute top-2 left-2 text-[8px] font-black bg-black/80 text-white px-1.5 py-0.5 rounded uppercase" x-text="product.type"></span>
                     </div>
                     
                     <div class="p-3 md:p-5 flex-1 flex flex-col">
                         <p class="text-[8px] md:text-[10px] font-black text-blue-600 uppercase mb-1" x-text="product.set"></p>
                         <h2 class="text-xs md:text-base font-bold leading-tight mb-2 h-8 md:h-12 overflow-hidden" x-text="product.name"></h2>
                         
-                        <div x-show="!product.soldOut" class="flex bg-gray-100 p-1 rounded-lg mb-3">
+                        <div class="flex bg-gray-100 p-1 rounded-lg mb-3">
                             <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md uppercase">Unit</button>
                             <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md uppercase">Case (<span x-text="product.unitsPerCase"></span>)</button>
                         </div>
@@ -78,7 +76,7 @@
                             </div>
                         </div>
 
-                        <div x-show="!product.soldOut" class="flex items-center space-x-1 mb-2">
+                        <div class="flex items-center space-x-1 mb-2">
                             <div class="flex items-center border border-gray-300 rounded-lg px-1 h-7 bg-gray-50 scale-90 md:scale-100 origin-left">
                                 <button @click="if(product.selectedQty > 1) product.selectedQty--" class="text-gray-500 px-2 font-bold">-</button>
                                 <input type="number" x-model.number="product.selectedQty" class="text-[10px] md:text-xs font-bold w-8 text-center bg-transparent border-none focus:ring-0">
@@ -86,8 +84,8 @@
                             </div>
                         </div>
 
-                        <button @click="addToCart(product)" :disabled="product.soldOut"
-                                :class="product.soldOut ? 'bg-gray-300' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900')"
+                        <button @click="addToCart(product)" 
+                                :class="product.justAdded ? 'bg-green-500' : 'bg-slate-900'"
                                 class="w-full h-9 rounded-lg text-white text-[10px] md:text-xs font-bold uppercase shadow-sm transition-all">
                             <span x-show="!product.justAdded">Add to Crate</span>
                             <span x-show="product.justAdded"><i class="fas fa-check mr-1"></i> Added</span>
@@ -164,20 +162,24 @@
                 searchQuery: '',
                 cart: [],
                 products: [
-                    { id: 3, name: "Booster Box [36 packs]", type: "Full BB", set: "ME05", price: 8500, unitsPerCase: 6, image: "https://i.ibb.co/zV4R9N3z/booster-box.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-                    { id: 4, name: "Elite Trainer Box", type: "ETB", set: "ME05", price: 3600, unitsPerCase: 10, image: "https://i.ibb.co/Ndd06Gp7/etb.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-                    { id: 5, name: "Half Booster Box [18 packs]", type: "Half BB", set: "ME05", price: 4300, unitsPerCase: 12, image: "https://i.ibb.co/LhRRkZ5Y/halfbb.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-                    { id: 6, name: "Sleeved Booster Pack", type: "Sleeved Pack", set: "ME05", price: 290, unitsPerCase: 144, image: "https://i.ibb.co/vtK4b8B/sleeved.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-                    { id: 7, name: "Booster Bundle [6 packs]", type: "Booster Bundle", set: "ME05", price: 2000, unitsPerCase: 25, image: "https://i.ibb.co/NgxHb5G5/booster-bundle.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-                    { id: 8, name: "Build and Battle [4 packs + Deck + Promo Card)", type: "Build and Battle", set: "ME05", price: 1700, unitsPerCase: 60, image: "https://i.ibb.co/k2NTSbX4/build-and-battle.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-                    { id: 9, name: "3 Pack Blister Assorted [3 packs]", type: "3 Pack Blister", set: "ME05", price: 950, unitsPerCase: 24, image: "https://i.ibb.co/F4jx7w5z/3packblister.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-                    { id: 10, name: "Checklane Blister [1 pack]", type: "Checklane Blister", set: "ME05", price: 350, unitsPerCase: 288, image: "https://i.ibb.co/z0DbPsV/checklane.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-                    { id: 11, name: "First Partner Illustration Collection [Series 2]", type: "Illustration Collection", set: "Series 2", price: 1350, unitsPerCase: 6, image: "https://cdn11.bigcommerce.com/s-vz3etek0gv/images/stencil/1200w/products/80302/110952/PKU10395_web_Box_3D_L__22499.1775155834.jpg", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-                    { id: 1, name: "OP17 Booster Box JP", type: "One Piece Booster Box JP", set: "OP17", price: 3350, unitsPerCase: 12, image: "https://i.ibb.co/gb1LgQC7/OP17-blank.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-                    { id: 2, name: "GD05 Booster Box JP", type: "Gundam Booster Box JP", set: "GD05", price: 3350, unitsPerCase: 12, image: "https://i.ibb.co/1ffpn1Xr/gd05blank.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false }
+                    { id: 1, name: "Booster Box [36 packs]", type: "Full BB", set: "ME05", price: 8500, unitsPerCase: 6, image: "https://i.ibb.co/zV4R9N3z/booster-box.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+                    { id: 2, name: "Elite Trainer Box", type: "ETB", set: "ME05", price: 3600, unitsPerCase: 10, image: "https://i.ibb.co/Ndd06Gp7/etb.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+                    { id: 3, name: "Half Booster Box [18 packs]", type: "Half BB", set: "ME05", price: 4300, unitsPerCase: 12, image: "https://i.ibb.co/LhRRkZ5Y/halfbb.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+                    { id: 4, name: "Sleeved Booster Pack", type: "Sleeved Pack", set: "ME05", price: 290, unitsPerCase: 144, image: "https://i.ibb.co/vtK4b8B/sleeved.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+                    { id: 5, name: "Booster Bundle [6 packs]", type: "Booster Bundle", set: "ME05", price: 2000, unitsPerCase: 25, image: "https://i.ibb.co/NgxHb5G5/booster-bundle.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+                    { id: 6, name: "Build and Battle [4 packs + Deck + Promo Card)", type: "Build and Battle", set: "ME05", price: 1700, unitsPerCase: 60, image: "https://i.ibb.co/k2NTSbX4/build-and-battle.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+                    { id: 7, name: "3 Pack Blister Assorted [3 packs]", type: "3 Pack Blister", set: "ME05", price: 950, unitsPerCase: 24, image: "https://i.ibb.co/F4jx7w5z/3packblister.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+                    { id: 8, name: "Checklane Blister [1 pack]", type: "Checklane Blister", set: "ME05", price: 350, unitsPerCase: 288, image: "https://i.ibb.co/z0DbPsV/checklane.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+                    { id: 9, name: "First Partner Illustration Collection [Series 2]", type: "Illustration Collection", set: "Series 2", price: 1350, unitsPerCase: 6, image: "https://cdn11.bigcommerce.com/s-vz3etek0gv/images/stencil/1200w/products/80302/110952/PKU10395_web_Box_3D_L__22499.1775155834.jpg", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+                    { id: 10, name: "OP17 Booster Box JP", type: "One Piece Booster Box JP", set: "OP17", price: 3350, unitsPerCase: 12, image: "https://i.ibb.co/gb1LgQC7/OP17-blank.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
+                    { id: 11, name: "GD05 Booster Box JP", type: "Gundam Booster Box JP", set: "GD05", price: 3350, unitsPerCase: 12, image: "https://i.ibb.co/1ffpn1Xr/gd05blank.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false }
                 ],
                 get filteredProducts() {
-                    return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                    return this.products.filter(p => {
+                        const matchesSearch = p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        const isAvailable = !p.soldOut;
+                        return matchesSearch && isAvailable;
+                    });
                 },
                 calculateLiveDeposit(product) {
                     const basePrice = product.isCase ? (product.price * product.unitsPerCase) : product.price;

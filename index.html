@@ -19,33 +19,44 @@
         <div class="container mx-auto flex justify-between items-center">
             
             <a href="/" class="flex flex-col hover:opacity-80 transition-opacity">
-                <span class="text-lg md:text-xl font-black tracking-tighter leading-none italic">CRATE DROP</span>
-                <span class="text-[10px] font-bold text-blue-500 tracking-[0.2em] uppercase">Collective</span>
+                <span class="text-lg md:text-xl font-black tracking-tighter leading-none">CRATE DROP</span>
+                <span class="text-[10px] font-bold text-blue-500 tracking-[0.2em]">COLLECTIVE</span>
             </a>
 
-            <button @click="cartOpen = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full flex items-center transition-all relative">
-                <i class="fas fa-shopping-cart mr-2 text-xs"></i>
-                <span class="font-bold text-xs text-white">₱<span x-text="cartDepositTotal"></span></span>
-                <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-[8px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-black" x-text="cart.reduce((s, i) => s + i.quantity, 0)"></span>
-            </button>
+            <div class="hidden md:flex items-center space-x-6 text-sm font-bold uppercase tracking-wide">
+                <a href="/" class="text-gray-400 hover:text-white transition-colors">Home</a>
+                <a href="/products" class="text-gray-400 hover:text-white transition-colors">Products</a>
+                <a href="/preorder" class="text-blue-500 border-b-2 border-blue-500 pb-1">Pre-Orders</a>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                
+                <div class="md:hidden relative" x-data="{ mobileMenuOpen: false }">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-white focus:outline-none pt-1">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <div x-show="mobileMenuOpen" @click.away="mobileMenuOpen = false" x-transition class="absolute right-0 mt-6 w-48 bg-white text-black rounded-lg shadow-xl overflow-hidden py-2 border border-gray-100" x-cloak>
+                        <a href="/" class="block px-4 py-3 text-xs font-bold hover:bg-gray-50 uppercase border-b border-gray-50">Home</a>
+                        <a href="/products" class="block px-4 py-3 text-xs font-bold hover:bg-gray-50 uppercase border-b border-gray-50">Products</a>
+                        <a href="/preorder" class="block px-4 py-3 text-xs font-bold bg-blue-50 text-blue-600 uppercase">Pre-Orders</a>
+                    </div>
+                </div>
+
+                <button @click="cartOpen = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full flex items-center transition-all relative">
+                    <i class="fas fa-shopping-cart mr-2 text-xs"></i>
+                    <span class="font-bold text-xs text-white">₱<span x-text="cartDepositTotal"></span></span>
+                    <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-[8px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-black" x-text="cart.reduce((s, i) => s + i.quantity, 0)"></span>
+                </button>
+            </div>
+            
         </div>
     </nav>
 
-    <div class="bg-black border-t border-white/10 sticky top-[68px] z-40">
-        <div class="container mx-auto px-4 overflow-x-auto no-scrollbar">
-            <div class="flex space-x-6 py-3">
-                <a href="/" class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Home</a>
-                <a href="/products" class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors">On-Hand</a>
-                <a href="/preorder" class="text-[10px] font-black uppercase tracking-widest text-blue-500 border-b-2 border-blue-500 pb-1">Pre-Orders</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white border-b border-gray-200 sticky top-[110px] z-30">
+    <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
         <div class="py-4 px-4">
             <div class="container mx-auto">
                 <div class="relative flex-1">
-                    <input type="text" x-model="searchQuery" placeholder="Search pre-order items..." 
+                    <input type="text" x-model="searchQuery" placeholder="Search products..." 
                            class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-xl text-base md:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                     <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
                 </div>
@@ -74,14 +85,14 @@
 
                         <div class="space-y-3 mb-4">
                             <div>
-                                <span class="text-[10px] text-slate-500 block uppercase font-bold">Total Price:</span>
+                                <span class="text-[10px] text-slate-500 block uppercase font-bold">Total Pre-order Price:</span>
                                 <p class="text-sm md:text-xl font-black text-slate-700">
                                     ₱<span x-text="( (product.isCase ? product.price * product.unitsPerCase : product.price) * product.selectedQty ).toLocaleString()"></span>
                                 </p>
                             </div>
                             
                             <div>
-                                <span class="text-[10px] text-blue-600 block uppercase font-bold">30% Downpayment:</span>
+                                <span class="text-[10px] text-blue-600 block uppercase font-bold">30% Total Downpayment:</span>
                                 <p class="text-sm md:text-xl font-black text-slate-900">
                                     ₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span>
                                 </p>
@@ -98,7 +109,7 @@
 
                         <button @click="addToCart(product)" 
                                 :class="product.justAdded ? 'bg-green-500' : 'bg-slate-900'"
-                                class="w-full h-9 rounded-lg text-white text-[10px] md:text-xs font-bold uppercase shadow-sm transition-all">
+                                class="w-full h-9 rounded-lg text-white text-[10px] md:text-xs font-bold uppercase shadow-sm transition-all mt-auto">
                             <span x-show="!product.justAdded">Add to Crate</span>
                             <span x-show="product.justAdded"><i class="fas fa-check mr-1"></i> Added</span>
                         </button>
@@ -108,8 +119,66 @@
         </div>
     </main>
 
+    <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cartOpen = false" x-transition.opacity></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0">
+            
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 class="text-xl font-black text-slate-900 uppercase tracking-tighter">Your Crate</h2>
+                <button @click="cartOpen = false" class="text-3xl">&times;</button>
+            </div>
+
+            <div class="flex-1 space-y-6">
+                <template x-for="(item, index) in cart" :key="index">
+                    <div class="flex items-start border-b border-gray-100 pb-4">
+                        <img :src="item.image" class="w-12 h-12 object-contain mr-4 bg-gray-50 p-1 rounded-lg">
+                        <div class="flex-1">
+                            <p class="font-bold text-xs leading-tight mb-1">
+                                <span x-text="item.name"></span> 
+                                <span class="text-blue-600 text-[9px]" x-text="item.isCase ? `(CASE OF ${item.unitsPerCase})` : '(UNIT)'"></span>
+                            </p>
+                            
+                            <div class="space-y-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-[10px] text-slate-600 font-bold uppercase">Qty:</span>
+                                    <div class="flex items-center border border-gray-200 rounded-md bg-gray-50 h-6">
+                                        <button @click="updateCartQty(index, -1)" class="px-2 text-xs font-bold text-slate-500 hover:text-red-500">-</button>
+                                        <span class="text-[10px] font-black w-6 text-center" x-text="item.quantity"></span>
+                                        <button @click="updateCartQty(index, 1)" class="px-2 text-xs font-bold text-slate-500 hover:text-blue-600">+</button>
+                                    </div>
+                                </div>
+                                <p class="text-[10px] text-gray-400 uppercase font-bold">Total Value: ₱<span x-text="(item.fullPrice * item.quantity).toLocaleString()"></span></p>
+                            </div>
+
+                            <div class="flex justify-between items-end mt-2">
+                                <button @click="removeItem(index)" class="text-red-500 text-[10px] font-bold uppercase hover:underline">Remove All</button>
+                                <div class="text-right">
+                                    <span class="text-[10px] text-blue-600 font-bold block uppercase leading-none">30% DP:</span>
+                                    <span class="font-black text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="mt-6 pt-6 border-t space-y-2" x-show="cart.length > 0">
+                <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                    <span>Full Order Value:</span>
+                    <span>₱<span x-text="cartFullTotal"></span></span>
+                </div>
+                <div class="flex justify-between text-lg font-black text-blue-600 border-t pt-2 uppercase">
+                    <span>Initial Pay (30%):</span>
+                    <span>₱<span x-text="cartDepositTotal"></span></span>
+                </div>
+                <button @click="checkout()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-xl font-black text-sm shadow-lg hover:bg-blue-700 active:scale-95 transition-all uppercase">
+                    Checkout via Messenger
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Keep your existing script logic here
         function shop() {
             return {
                 cartOpen: false,
@@ -128,7 +197,6 @@
                     { id: 10, name: "OP17 Booster Box JP", type: "One Piece Booster Box JP", set: "OP17", price: 3350, unitsPerCase: 12, image: "https://i.ibb.co/gb1LgQC7/OP17-blank.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
                     { id: 11, name: "GD05 Booster Box JP", type: "Gundam Booster Box JP", set: "GD05", price: 3350, unitsPerCase: 12, image: "https://i.ibb.co/1ffpn1Xr/gd05blank.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false }
                 ],
-                // ... all your existing methods (addToCart, updateCartQty, checkout, etc.)
                 get filteredProducts() {
                     return this.products.filter(p => {
                         const matchesSearch = p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
@@ -144,6 +212,7 @@
                     if(product.soldOut) return;
                     const fullPricePerItem = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     const existingItem = this.cart.find(item => item.productId === product.id && item.isCase === product.isCase);
+
                     if (existingItem) {
                         existingItem.quantity += product.selectedQty;
                     } else {
@@ -158,6 +227,7 @@
                             image: product.image
                         });
                     }
+
                     product.justAdded = true;
                     setTimeout(() => { product.justAdded = false; }, 1000);
                     product.selectedQty = 1;
@@ -188,6 +258,7 @@
                     });
                     orderSummary += `FULL ORDER VALUE: ₱${this.cartFullTotal}\n`;
                     orderSummary += `TOTAL DOWNPAYMENT (30%): ₱${this.cartDepositTotal}`;
+
                     try {
                         await navigator.clipboard.writeText(orderSummary);
                         alert("Details copied! Opening Messenger...");

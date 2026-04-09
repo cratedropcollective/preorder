@@ -100,11 +100,8 @@
                                 :disabled="product.soldOut"
                                 :class="product.soldOut ? 'bg-gray-400 cursor-not-allowed' : (product.justAdded ? 'bg-green-500 hover:bg-green-600' : 'bg-slate-900 hover:bg-slate-800')"
                                 class="w-full h-9 rounded-lg text-white text-[10px] md:text-xs font-bold uppercase shadow-sm transition-all mt-auto pointer-events-auto">
-                            
                             <span x-show="!product.justAdded && !product.soldOut">Add to Crate</span>
-                            
                             <span x-show="product.justAdded && !product.soldOut"><i class="fas fa-check mr-1"></i> Added</span>
-                            
                             <span x-show="product.soldOut">Coming Soon</span>
                         </button>
                     </div>
@@ -116,12 +113,10 @@
     <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cartOpen = false" x-transition.opacity></div>
         <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0">
-            
             <div class="flex justify-between items-center mb-6 border-b pb-4">
                 <h2 class="text-xl font-black text-slate-900 uppercase tracking-tighter">Your Crate</h2>
                 <button @click="cartOpen = false" class="text-3xl">&times;</button>
             </div>
-
             <div class="flex-1 space-y-6">
                 <template x-for="(item, index) in cart" :key="index">
                     <div class="flex items-start border-b border-gray-100 pb-4">
@@ -131,7 +126,6 @@
                                 <span x-text="item.name"></span> 
                                 <span class="text-blue-600 text-[9px]" x-text="item.isCase ? `(CASE OF ${item.unitsPerCase})` : '(UNIT)'"></span>
                             </p>
-                            
                             <div class="space-y-1">
                                 <div class="flex items-center space-x-2">
                                     <span class="text-[10px] text-slate-600 font-bold uppercase">Qty:</span>
@@ -143,7 +137,6 @@
                                 </div>
                                 <p class="text-[10px] text-gray-400 uppercase font-bold">Total Value: ₱<span x-text="(item.fullPrice * item.quantity).toLocaleString()"></span></p>
                             </div>
-
                             <div class="flex justify-between items-end mt-2">
                                 <button @click="removeItem(index)" class="text-red-500 text-[10px] font-bold uppercase hover:underline">Remove All</button>
                                 <div class="text-right">
@@ -155,7 +148,6 @@
                     </div>
                 </template>
             </div>
-
             <div class="mt-6 pt-6 border-t space-y-2" x-show="cart.length > 0">
                 <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
                     <span>Full Order Value:</span>
@@ -192,10 +184,10 @@
                     { id: 11, name: "GD05 Booster Box JP", type: "Gundam Booster Box JP", set: "GD05", price: 3350, unitsPerCase: 12, image: "https://i.ibb.co/1ffpn1Xr/gd05blank.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false }
                 ],
                 get filteredProducts() {
-                    // Update: Remove the soldOut filter so items remain visible
-                    return this.products.filter(p => {
-                        return p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
-                    });
+                    // This sorts available items to the top and filters by search query
+                    return this.products
+                        .filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
+                        .sort((a, b) => a.soldOut - b.soldOut);
                 },
                 calculateLiveDeposit(product) {
                     const basePrice = product.isCase ? (product.price * product.unitsPerCase) : product.price;

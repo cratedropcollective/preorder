@@ -233,7 +233,7 @@
                     return this.cart.reduce((sum, item) => sum + (item.fullPrice * item.quantity), 0).toLocaleString();
                 },
                 async checkout() {
-                    let orderSummary = "🛒 ORDER FROM CRATE DROP COLLECTIVE\n";
+                    let orderSummary = "🛒 PREORDER FROM CRATE DROP COLLECTIVE\n";
                     orderSummary += "---------------------------------\n";
                     this.cart.forEach(item => {
                         const type = item.isCase ? `CASE OF ${item.unitsPerCase}` : "UNIT";
@@ -246,7 +246,7 @@
 
                     try {
                         await navigator.clipboard.writeText(orderSummary);
-                        alert("Details copied! Opening Messenger...");
+                        alert("Got it! We've copied your order. Just paste it in our chat!");
                         window.open("https://m.me/cratedropcollective", "_blank");
                     } catch (err) {
                         window.open("https://m.me/cratedropcollective", "_blank");

@@ -113,10 +113,20 @@
     <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cartOpen = false" x-transition.opacity></div>
         <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0">
+            
             <div class="flex justify-between items-center mb-6 border-b pb-4">
                 <h2 class="text-xl font-black text-slate-900 uppercase tracking-tighter">Your Crate</h2>
                 <button @click="cartOpen = false" class="text-3xl">&times;</button>
             </div>
+
+            <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4" x-show="cart.length > 0">
+                <p class="text-[11px] text-blue-900 leading-relaxed font-medium">
+                    <i class="fas fa-info-circle mr-1 text-blue-600"></i> 
+                    <strong>How to order:</strong> Clicking checkout will copy your order details. Just <strong>Paste</strong> it in Messenger! 
+                    <span class="block mt-1 opacity-75 italic">You can also take a screenshot of this cart to message us.</span>
+                </p>
+            </div>
+
             <div class="flex-1 space-y-6">
                 <template x-for="(item, index) in cart" :key="index">
                     <div class="flex items-start border-b border-gray-100 pb-4">
@@ -184,7 +194,6 @@
                     { id: 11, name: "GD05 Booster Box JP", type: "Gundam Booster Box JP", set: "GD05", price: 3350, unitsPerCase: 12, image: "https://i.ibb.co/1ffpn1Xr/gd05blank.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false }
                 ],
                 get filteredProducts() {
-                    // This sorts available items to the top and filters by search query
                     return this.products
                         .filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
                         .sort((a, b) => a.soldOut - b.soldOut);

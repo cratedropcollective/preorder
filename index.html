@@ -67,7 +67,7 @@
                         </div>
 
                         <div class="space-y-2 mb-4">
-                            <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="product.price"></span></div>
+                            <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDepositx(product).toLocaleString()"></span></div>
                             <div class="text-[10px] font-bold uppercase text-slate-500">30% Downpayment:</div>
                             <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
                         </div>
@@ -241,6 +241,10 @@
                 calculateLiveDeposit(product) {
                     const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     return base * 0.3 * (product.selectedQty || 1);
+                },
+                calculateLiveDepositx(product) {
+                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    return base * 1 * (product.selectedQty || 1);
                 },
                 addToCart(product) {
                     const price = product.isCase ? (product.price * product.unitsPerCase) : product.price;

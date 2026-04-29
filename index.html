@@ -152,9 +152,10 @@
                         <div class="mb-3 pb-3 border-b border-gray-200 last:border-0 last:pb-0">
                             <div class="flex justify-between text-xs font-bold">
                                 <span><span x-text="item.quantity"></span>x <span x-text="item.name"></span></span>
-                                <span>₱<span x-text="(item.fullPrice * item.quantity).toLocaleString()"></span></span>
+                                <span>₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
                             </div>
                             <div class="flex justify-between text-[9px] font-bold text-blue-500 uppercase mt-1">
+                                <span class="text-blue-600 text-[9px]" x-text="item.isCase ? '(CASE)' : '(UNIT)'"></span>
                                 <span>ETA: <span x-text="item.eta"></span></span>
                                 <span>Balance: ₱<span x-text="((item.fullPrice - item.depositPrice) * item.quantity).toLocaleString()"></span></span>
                             </div>

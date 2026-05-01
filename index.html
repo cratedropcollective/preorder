@@ -15,6 +15,7 @@
 </head>
 <body class="bg-gray-50 font-sans text-slate-900" x-data="shop()" x-cloak>
 
+    <!-- Navigation -->
     <nav class="bg-black text-white p-4 sticky top-0 z-50 shadow-2xl">
         <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
             <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity">
@@ -38,6 +39,7 @@
         </div>
     </nav>
 
+    <!-- Search & Planner Toggle -->
     <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
         <div class="py-4 px-4 container mx-auto">
             <div class="flex gap-2">
@@ -54,6 +56,7 @@
         </div>
     </div>
 
+    <!-- Allocation Planner Section -->
     <section x-show="showPlanner" 
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 -translate-y-4"
@@ -86,8 +89,8 @@
                     </div>
 
                     <div class="flex bg-gray-100 p-1 rounded-xl">
-                        <button @click="calcIsCase = false" :class="!calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg transition-all">BY UNIT</button>
-                        <button @click="calcIsCase = true" :class="calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg transition-all uppercase">BY CASE</button>
+                        <button @click="calcIsCase = false" :class="!calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg transition-all uppercase">By Unit</button>
+                        <button @click="calcIsCase = true" :class="calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg transition-all uppercase">By Case</button>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -133,10 +136,15 @@
         </div>
     </section>
 
+    <!-- Product Grid -->
     <main class="container mx-auto py-6 px-2 md:px-4">
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
+        <div x-show="isLoading" class="text-center py-12">
+            <p class="text-blue-600 font-bold animate-pulse uppercase tracking-widest">Loading Drops...</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8" x-show="!isLoading">
             <template x-for="product in filteredProducts" :key="product.id">
-                <div :class="product.soldOut ? 'opacity-60 grayscale' : 'hover:shadow-lg'" class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all flex flex-col relative">
+                <div :class="(product.soldOut || isExpired(product.deadline)) ? 'opacity-60 grayscale' : 'hover:shadow-lg'" class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all flex flex-col relative">
                     <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4">
                         <span class="absolute top-2 left-2 text-[8px] font-black bg-slate-900 text-white px-2 py-1 rounded shadow-sm uppercase tracking-wider z-10" x-text="product.type"></span>
                         <img :src="product.image" class="max-h-full max-w-full object-contain">
@@ -152,8 +160,16 @@
                             <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md uppercase">CASE (<span x-text="product.unitsPerCase"></span>)</button>
                         </div>
 
+                        <template x-if="product.deadline">
+                            <div class="mb-3 text-[9px] font-bold p-2 rounded-lg border flex items-center justify-center gap-2 uppercase tracking-tight"
+                                 :class="isExpired(product.deadline) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'">
+                                <span x-text="isExpired(product.deadline) ? '🛑 Pre-Order Closed' : '⏳ Closes: ' + getCountdown(product.deadline)"></span>
+                            </div>
+                        </template>
+
                         <div class="space-y-2 mb-4">
-                            <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDepositx(product).toLocaleString()"></span></div>
+                            <!-- FIXED: Changed calculateLiveDepositx to calculateFullPrice -->
+                            <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateFullPrice(product).toLocaleString()"></span></div>
                             <div class="text-[10px] font-bold uppercase text-slate-500">30% Downpayment:</div>
                             <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
                         </div>
@@ -166,8 +182,12 @@
                             </div>
                         </div>
 
-                        <button @click="addToCart(product)" :disabled="product.soldOut" :class="product.soldOut ? 'bg-gray-400' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900 hover:bg-slate-800')" class="w-full h-9 rounded-lg text-white text-[10px] font-bold uppercase transition-all mt-auto">
-                            <span x-text="product.soldOut ? 'Coming Soon' : (product.justAdded ? 'Added' : 'Add to Crate')"></span>
+                        <button 
+                            @click="addToCart(product)" 
+                            :disabled="product.soldOut || isExpired(product.deadline)" 
+                            :class="(product.soldOut || isExpired(product.deadline)) ? 'bg-gray-400 cursor-not-allowed' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900 hover:bg-slate-800')" 
+                            class="w-full h-9 rounded-lg text-white text-[10px] font-bold uppercase transition-all mt-auto">
+                            <span x-text="isExpired(product.deadline) ? 'Closed' : (product.soldOut ? 'Coming Soon' : (product.justAdded ? 'Added' : 'Add to Crate'))"></span>
                         </button>
                     </div>
                 </div>
@@ -175,6 +195,7 @@
         </div>
     </main>
 
+    <!-- Cart Sidebar & Payment Modals remain same, functionality updated in script -->
     <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cartOpen = false" x-transition.opacity></div>
         <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform translate-x-full" x-transition:enter-end="translate-x-0">
@@ -214,7 +235,7 @@
 
                 <div class="grid grid-cols-1 gap-2">
                     <button @click="confirmAndRedirect()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-xs uppercase shadow hover:bg-slate-800 transition-all">
-                        <i class="fab fa-facebook-messenger mr-2"></i> Assisted Checkout (Paste Order in Messenger)
+                        <i class="fab fa-facebook-messenger mr-2"></i> Assisted Checkout (Paste Order)
                     </button>
                     <button @click="checkoutSelf()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs uppercase shadow hover:bg-blue-700 transition-all border-2 border-blue-400">
                         <i class="fas fa-qrcode mr-2"></i> Self-Checkout (Pay via QR)
@@ -224,6 +245,7 @@
         </div>
     </div>
 
+    <!-- Payment Modal -->
     <div x-show="paymentModalOpen" class="fixed inset-0 z-[70]" style="display: none;">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="paymentModalOpen = false" x-transition.opacity></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl flex flex-col max-h-[90vh]">
@@ -264,8 +286,7 @@
                 <div class="text-center py-4 border-2 border-dashed border-gray-200 rounded-2xl">
                     <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pay via Instapay. <strong class="text-slate-800">TAKE A SCREENSHOT</strong> of this screen and your payment receipt.</p>
                     <img src="https://www.image2url.com/r2/default/images/1777388590470-26cd0706-92f7-4a95-b141-0c218a530962.png" class="w-40 h-40 mx-auto rounded-lg">
-                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Orders amounting to <strong class="text-slate-800">₱50,000</strong> and above may settle via <strong class="text-slate-800">Private Message</strong>.</p>
-                    <p class="text-[11px] text-black-500 mb-4 font-medium px-4">Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.</p>
+                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.</p>
                 </div>
             </div>
 
@@ -276,66 +297,133 @@
     </div>
 
     <script>
-        const PREORDER_INVENTORY = [
-            { id: 1, name: "Booster Box [36 packs]", type: "Full BB", set: "ME05", price: 8500, unitsPerCase: 6, eta:"July 2026", image: "https://www.image2url.com/r2/default/images/1777567010172-8f2edbca-55d3-4e22-a879-d05a842c9e63.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 2, name: "Elite Trainer Box", type: "ETB", set: "ME05", price: 3600, unitsPerCase: 10, eta:"July 2026", image: "https://www.image2url.com/r2/default/images/1777567973118-3145d784-ca6a-4a2d-b032-43977ccb73ca.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 3, name: "Half Booster Box [18 packs]", type: "Half BB", set: "ME05", price: 4300, unitsPerCase: 12, eta:"July 2026", image: "https://i.ibb.co/LhRRkZ5Y/halfbb.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 4, name: "Sleeved Booster Pack", type: "Sleeved Pack", set: "ME05", price: 290, unitsPerCase: 144, eta:"July 2026", image: "https://i.ibb.co/vtK4b8B/sleeved.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 5, name: "Booster Bundle [6 packs]", type: "Booster Bundle", set: "ME05", price: 2000, unitsPerCase: 25, eta:"July 2026", image: "https://www.image2url.com/r2/default/images/1777567156200-1886a252-480b-4a8b-bd9f-13b18d0dfb10.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 6, name: "Build and Battle [4 packs + Deck + Promo Card)", type: "Build and Battle", set: "ME05", price: 1700, unitsPerCase: 60, eta:"July 2026", image: "https://www.image2url.com/r2/default/images/1777567259759-cdf94c07-4cd9-4d78-8df9-eceee38bd93d.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 7, name: "3 Pack Blister Assorted [3 packs]", type: "3 Pack Blister", set: "ME05", price: 950, unitsPerCase: 24, eta:"July 2026", image: "https://www.image2url.com/r2/default/images/1777567394358-8fe6d7f2-e251-4864-b3fd-5f3d9239c9fd.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 8, name: "Checklane Blister [1 pack / 1 promo]", type: "Checklane Blister", set: "ME05", price: 350, unitsPerCase: 288, eta:"July 2026", image: "https://www.image2url.com/r2/default/images/1777567534555-27aa9216-852a-4c5f-be44-baeb712cc128.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 9, name: "Premium Checklane Blister [1 pack / 3 random promo]", type: "Premium Checklane Blister", set: "ME05", price: 350, unitsPerCase: 288, eta:"July 2026", image: "https://www.image2url.com/r2/default/images/1777567662495-18befd76-f565-44dd-9c4b-a767a907dcf8.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 10, name: "First Partner Illustration Collection [Series 2]", type: "Illustration Collection", set: "Series 2", eta:"June 2026", price: 1400, unitsPerCase: 6, image: "https://cdn11.bigcommerce.com/s-vz3etek0gv/images/stencil/1200w/products/80302/110952/PKU10395_web_Box_3D_L__22499.1775155834.jpg", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-            { id: 11, name: "[ME04] Mega Greninja Ex Premium Collection", type: "Premium Collection", set: "ME04 Chaos Rising", price: 3600, unitsPerCase: 6, eta:"July 2026", image: "https://antiquestore.com.mx/wp-content/uploads/2026/04/producto-28.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-            { id: 12, name: "ST11 Starter Deck ENG [Aquatic Assault]", type: "Gundam Starter Deck EN", set: "ST11", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/RpzgwW1Q/ST11.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 13, name: "ST12 Starter Deck ENG [Raging Onslaught]", type: "Gundam Starter Deck EN", set: "ST12", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/zhhdgRsY/ST12.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 14, name: "ST13 Starter Deck ENG [Silent Barrage]", type: "Gundam Starter Deck EN", set: "ST13", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/jP5Btfx6/ST13.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 15, name: "ST14 Starter Deck ENG [Heavy Dominion]", type: "Gundam Starter Deck EN", set: "ST14", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/j0H539B/ST14.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 16, name: "Dragon Ball Super Card Game Fusion World (JP) Booster Pack [FB11]", type: "Dragon Ball Fusion World Booster JP", set: "FB11", price: 3500, unitsPerCase: 12, eta:"September 2026", image: "https://i.ibb.co/v6GQqC4J/DBFWJAPTEMPLATE.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-            { id: 17, name: "Dragon Ball Super Card Game Masters (ENG) Booster Pack Ultra Bout #5 [B32]", type: "Dragon Ball Master Booster Box EN ", set: "B32", price: 9200, unitsPerCase: 12, eta:"November 2026", image: "https://i.ibb.co/7tFkdkzH/DBMB32.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-            { id: 18, name: "Yu-Gi-Oh! (Asian English) Booster Box Chaos Origins", type: "Yugioh Asian English", set: "Chaos Origins", price: 3200, unitsPerCase: 24, eta:"August 2026", image: "https://img.yugioh-card.com/asia/wp-content/uploads/2026/03/cg2080-1.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-        ];
-
         function shop() {
             return {
+                isLoading: true,
                 cartOpen: false,
                 paymentModalOpen: false,
                 searchQuery: '',
                 cart: [],
-                products: PREORDER_INVENTORY.map(p => ({ ...p, selectedQty: 1, isCase: false, justAdded: false })),
+                products: [], 
+                now: new Date().getTime(), 
                 
-                // --- Allocation Planner State ---
-               showPlanner: false,
-            calcSelectedId: PREORDER_INVENTORY[0].id,
-            calcInputQty: 1,
-            calcFillRate: 100,
-            calcIsCase: false,
-                
-                get calculatedUnits() {
-                const product = this.products.find(p => p.id == this.calcSelectedId);
-                if (!product) return 0;
-                const totalUnitsOrdered = this.calcIsCase ? (this.calcInputQty * product.unitsPerCase) : this.calcInputQty;
-                return Math.floor(totalUnitsOrdered * (this.calcFillRate / 100));
-            },
-            
-            get calculatedTotalValue() {
-                const product = this.products.find(p => p.id == this.calcSelectedId);
-                return (this.calculatedUnits * (product ? product.price : 0)).toLocaleString();
-            },
-            
-            get calculatedDownpayment() {
-                const product = this.products.find(p => p.id == this.calcSelectedId);
-                if (!product) return "0";
-                
-                // DP is always calculated on the INITIAL TARGET (how much money they must put out)
-                const basePrice = this.calcIsCase ? (product.price * product.unitsPerCase) : product.price;
-                const totalTargetValue = basePrice * this.calcInputQty;
-                
-                return (totalTargetValue * 0.3).toLocaleString();
-            },
+                showPlanner: false,
+                calcSelectedId: null,
+                calcInputQty: 1,
+                calcFillRate: 100,
+                calcIsCase: false,
 
-                // --- Original Shop Methods ---
+                async init() {
+                    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv'; 
+                    
+                    setInterval(() => {
+                        this.now = new Date().getTime();
+                    }, 1000);
+
+                    try {
+                        const response = await fetch(sheetUrl);
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        const data = await response.text();
+                        this.parseTSV(data);
+                    } catch (error) {
+                        console.error('Error fetching inventory:', error);
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                parseTSV(tsvText) {
+                    const lines = tsvText.split(/\r?\n/);
+                    if (lines.length < 2) return;
+
+                    const headers = lines[0].split('\t').map(h => h.trim());
+                    const items = [];
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue; 
+
+                        const values = line.split('\t');
+                        let product = {};
+                        
+                        headers.forEach((header, index) => {
+                            let val = values[index] ? values[index].trim() : '';
+                            
+                            if (header === 'preorderDeadline') {
+                                product.deadline = val ? new Date(val).getTime() : null;
+                            } else if (['id', 'price', 'unitsPerCase'].includes(header)) {
+                                product[header] = Number(val) || 0;
+                            } else if (header === 'soldOut') {
+                                product[header] = (val.toUpperCase() === 'TRUE');
+                            } else {
+                                product[header] = val;
+                            }
+                        });
+
+                        product.selectedQty = 1;
+                        product.isCase = false;
+                        product.justAdded = false;
+                        items.push(product);
+                    }
+                    
+                    this.products = items;
+                    if (this.products.length > 0) {
+                        this.calcSelectedId = this.products[0].id;
+                    }
+                },
+
+                // --- NEW PRICING FUNCTIONS ---
+                calculateFullPrice(product) {
+                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    return base * (product.selectedQty || 1);
+                },
+
+                calculateLiveDeposit(product) {
+                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    return base * 0.3 * (product.selectedQty || 1);
+                },
+
+                // --- COUNTDOWN LOGIC ---
+                getCountdown(deadline) {
+                    if (!deadline) return null;
+                    const distance = deadline - this.now;
+                    if (distance < 0) return "CLOSED";
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                },
+
+                isExpired(deadline) {
+                    return deadline && (deadline - this.now < 0);
+                },
+                
+                // --- PLANNER LOGIC ---
+                get calculatedUnits() {
+                    if (!this.calcSelectedId) return 0;
+                    const product = this.products.find(p => p.id == this.calcSelectedId);
+                    if (!product) return 0;
+                    const totalUnitsOrdered = this.calcIsCase ? (this.calcInputQty * product.unitsPerCase) : this.calcInputQty;
+                    return Math.floor(totalUnitsOrdered * (this.calcFillRate / 100));
+                },
+                
+                get calculatedTotalValue() {
+                    if (!this.calcSelectedId) return "0";
+                    const product = this.products.find(p => p.id == this.calcSelectedId);
+                    const units = this.calculatedUnits;
+                    return (units * (product ? product.price : 0)).toLocaleString();
+                },
+                
+                get calculatedDownpayment() {
+                    if (!this.calcSelectedId) return "0";
+                    const product = this.products.find(p => p.id == this.calcSelectedId);
+                    if (!product) return "0";
+                    const basePrice = this.calcIsCase ? (product.price * product.unitsPerCase) : product.price;
+                    return (basePrice * this.calcInputQty * 0.3).toLocaleString();
+                },
+
+                // --- CART CORE ---
                 get filteredProducts() {
                     return this.products
                         .filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
@@ -355,20 +443,20 @@
                     const dp = this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0);
                     return (full - dp).toLocaleString();
                 },
-                calculateLiveDeposit(product) {
-                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    return base * 0.3 * (product.selectedQty || 1);
-                },
-                calculateLiveDepositx(product) {
-                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    return base * 1 * (product.selectedQty || 1);
-                },
+
                 addToCart(product) {
                     const price = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     const existing = this.cart.find(i => i.productId === product.id && i.isCase === product.isCase);
-                    if (existing) { existing.quantity += product.selectedQty; } 
-                    else {
-                        this.cart.push({ ...product, productId: product.id, fullPrice: price, depositPrice: price * 0.3, quantity: product.selectedQty });
+                    if (existing) { 
+                        existing.quantity += product.selectedQty; 
+                    } else {
+                        this.cart.push({ 
+                            ...product, 
+                            productId: product.id, 
+                            fullPrice: price, 
+                            depositPrice: price * 0.3, 
+                            quantity: product.selectedQty 
+                        });
                     }
                     product.justAdded = true;
                     setTimeout(() => product.justAdded = false, 1000);
@@ -388,10 +476,11 @@
                     });
                     summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
                     summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
-                    summary += `STATUS: Payment Pending\n`;
-                    summary += `**Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.**`;
+                    summary += `STATUS: Payment Pending\n\n`;
+                    summary += `Pre-Orders are subject to country allocation.`;
+                    
                     await navigator.clipboard.writeText(summary);
-                    alert("Opening Messenger! [Fast Checkout]: Simply Paste your order. [Self Checkout]: Send Screenshot of Order Breakdown and Proof of Payment.");
+                    alert("Order copied! Opening Messenger...");
                     window.open("https://m.me/cratedropcollective", "_blank");
                 }
             }
